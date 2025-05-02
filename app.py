@@ -5,11 +5,9 @@ from io import BytesIO
 st.set_page_config(page_title="BOM Selector", layout="wide")
 st.title("📦 Project BOM Builder")
 
-# Upload Excel file
-uploaded_file = st.file_uploader("Upload the Excel file", type=["xlsx"])
-
-if uploaded_file:
-    xls = pd.ExcelFile(uploaded_file)
+# Load Excel file directly from the repo
+try:
+    xls = pd.ExcelFile("Smart Closet Parent Partcode.xlsx")  # make sure 'data.xlsx' is in the repo
 
     if "BOM" in xls.sheet_names:
         bom_df = pd.read_excel(xls, sheet_name="BOM")
@@ -32,11 +30,9 @@ if uploaded_file:
                 select_all = st.checkbox("✅ Select All")
                 edited_df = part_df.copy()
 
-                edited_df["Select"] = select_all  # Pre-fill selection if 'Select All' is checked
-
+                edited_df["Select"] = select_all
                 st.dataframe(edited_df.drop(columns=["Select"]))  # View-only mode
 
-                # Allow selection using table-like inputs
                 selected_rows = st.multiselect(
                     "✔️ Select rows to include in BOM (by index):",
                     options=part_df.index.tolist(),
@@ -55,7 +51,6 @@ if uploaded_file:
                     st.success("✅ Final Bill of Material")
                     st.dataframe(final_bom, use_container_width=True)
 
-                    # Show total for last numeric column
                     if last_numeric_col:
                         total = final_bom[last_numeric_col].sum()
                         st.markdown(f"**🔢 Total {last_numeric_col}: `{total}`**")
@@ -78,6 +73,6 @@ if uploaded_file:
         else:
             st.error(f"❌ Sheet `{selected_part}` not found in Excel file.")
     else:
-        st.error("❌ 'BOM' sheet not found in the uploaded Excel file.")
-else:
-    st.info("📂 Please upload an Excel file to begin.")
+        st.error("❌ 'BOM' sheet not found in the Excel file.")
+except FileNotFoundError:
+    st.error("❌ 'data.xlsx' file not found. Please ensure it exists in the app directory.")
