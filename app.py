@@ -113,25 +113,19 @@ with selected_tab[-1]:
             pdf_files = [f for f in os.listdir(folder_path) if f.lower().endswith(".pdf")]
 
             if pdf_files:
-                selected_pdf = st.selectbox("📝 Select a PDF to view/download:", pdf_files)
+                selected_pdf = st.selectbox("📝 Select a PDF to download:", pdf_files)
                 pdf_path = os.path.join(folder_path, selected_pdf)
 
                 with open(pdf_path, "rb") as f:
                     pdf_data = f.read()
 
-                # Download button
+                # Only Download button (Preview removed)
                 st.download_button(
                     label="📥 Download PDF",
                     data=pdf_data,
                     file_name=selected_pdf,
                     mime="application/pdf"
                 )
-
-                # PDF Preview using iframe + base64 embed
-                base64_pdf = base64.b64encode(pdf_data).decode('utf-8')
-                pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="800px"></iframe>'
-                st.markdown("### 📄 PDF Preview", unsafe_allow_html=True)
-                st.markdown(pdf_display, unsafe_allow_html=True)
 
             else:
                 st.warning("⚠️ No PDF files found in the selected folder.")
