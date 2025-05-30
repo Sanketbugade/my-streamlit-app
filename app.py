@@ -2,10 +2,9 @@ import streamlit as st
 import pandas as pd
 from io import BytesIO
 import os
-import base64
 
 st.set_page_config(page_title="BOM Selector", layout="wide")
-st.title("📦 Vertiv™ SmartSolutions™(IT Solutions)- Project BOM Builder, Drawings")
+st.title("📦 Vertiv™ SmartSolutions™(IT Solutions) - Project BOM Builder & Drawings")
 
 # Tab setup
 tabs = {
@@ -15,11 +14,11 @@ tabs = {
     "SmartRow": "Smart Row Parent Partcode.xlsx"
 }
 
-# Add extra Panel Drwg tab
+# Add extra tab for drawings
 tab_names = list(tabs.keys()) + ["Panel Drwg"]
 selected_tab = st.tabs(tab_names)
 
-# Render BOM tabs
+# BOM Tabs
 for i, tab_label in enumerate(list(tabs.keys())):
     with selected_tab[i]:
         st.subheader(f"📁 {tab_label} BOM Selection")
@@ -42,25 +41,29 @@ for i, tab_label in enumerate(list(tabs.keys())):
                     part_df = pd.read_excel(xls, sheet_name=selected_part)
                     st.markdown(f"### 🧾 Components for: `{selected_part}`")
 
+                    # Add selection column
                     part_df["Select"] = False
-                    numeric_cols = part_df.select_dtypes(include='number').columns.tolist()
-                    last_numeric_col = numeric_cols[-1] if numeric_cols else None
 
                     with st.form(f"{tab_label}_form"):
                         select_all = st.checkbox("✅ Select All")
-                        edited_df = part_df.copy()
-
-                        edited_df["Select"] = select_all
-                        st.dataframe(edited_df.drop(columns=["Select"]))  # View-only mode
-
                         selected_rows = st.multiselect(
                             "✔️ Select rows to include in BOM (by index):",
                             options=part_df.index.tolist(),
                             default=part_df.index.tolist() if select_all else []
                         )
 
-                        for i in part_df.index:
-                            part_df.at[i, "Select"] = i in selected_rows
+                        for idx in part_df.index:
+                            part_df.at[idx, "Select"] = idx in selected_rows
+
+                        # Editable LP if present
+                        if "LP" in part_df.columns:
+                            st.markdown("### 💰 Update LP (List Price) if needed")
+                            edited_lp = st.data_editor(
+                                part_df.loc[part_df["Select"] == True, ["LP"]],
+                                num_rows="dynamic",
+                                key=f"lp_editor_{tab_label}"
+                            )
+                            part_df.loc[part_df["Select"] == True, "LP"] = edited_lp["LP"].values
 
                         submitted = st.form_submit_button("✅ Create BOM")
 
@@ -71,10 +74,7 @@ for i, tab_label in enumerate(list(tabs.keys())):
                             st.success("✅ Final Bill of Material")
                             st.dataframe(final_bom, use_container_width=True)
 
-                            if last_numeric_col:
-                                total = final_bom[last_numeric_col].sum()
-                                st.markdown(f"**🔢 Total {last_numeric_col}: `{total}`**")
-
+                            # Download
                             def to_excel(df):
                                 output = BytesIO()
                                 with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
@@ -86,7 +86,7 @@ for i, tab_label in enumerate(list(tabs.keys())):
                                 label="📥 Download BOM as Excel",
                                 data=excel_data,
                                 file_name=f"{tab_label}_Final_BOM.xlsx",
-                                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                             )
                         else:
                             st.warning("⚠️ Please select at least one item to generate BOM.")
@@ -96,7 +96,7 @@ for i, tab_label in enumerate(list(tabs.keys())):
                 st.error("❌ 'BOM' sheet not found in the Excel file.")
 
         except FileNotFoundError:
-            st.error(f"❌ '{excel_file}' file not found. Please ensure it exists in the app directory.")
+            st.error(f"❌ File '{excel_file}' not found. Please place it in the app directory.")
 
 # Panel Drawing Tab
 with selected_tab[-1]:
@@ -119,14 +119,12 @@ with selected_tab[-1]:
                 with open(pdf_path, "rb") as f:
                     pdf_data = f.read()
 
-                # Only Download button (Preview removed)
                 st.download_button(
                     label="📥 Download PDF",
                     data=pdf_data,
                     file_name=selected_pdf,
                     mime="application/pdf"
                 )
-
             else:
                 st.warning("⚠️ No PDF files found in the selected folder.")
         else:
