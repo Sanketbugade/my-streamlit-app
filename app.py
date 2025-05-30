@@ -5,7 +5,7 @@ from io import BytesIO
 from st_pdf_viewer import pdf_viewer
 
 st.set_page_config(page_title="BOM Selector", layout="wide")
-st.title("📦 PVertiv™ SmartSolutions™(IT Solutions)- Project BOM Builder, Drawings")
+st.title("📦 Vertiv™ SmartSolutions™(IT Solutions)- Project BOM Builder, Drawings")
 
 # Existing tabs and files
 tabs = {
