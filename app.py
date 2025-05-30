@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from io import BytesIO
+import os
 
 st.set_page_config(page_title="BOM Selector", layout="wide")
 st.title("📦 Project BOM Builder")
@@ -13,11 +14,12 @@ tabs = {
     "SmartRow": "Smart Row Parent Partcode.xlsx"
 }
 
-tab_names = list(tabs.keys())
+# Add extra Panel Drwg tab
+tab_names = list(tabs.keys()) + ["Panel Drwg"]
 selected_tab = st.tabs(tab_names)
 
-# Go through each tab and render content only for the active one
-for i, tab_label in enumerate(tab_names):
+# Render BOM tabs
+for i, tab_label in enumerate(list(tabs.keys())):
     with selected_tab[i]:
         st.subheader(f"📁 {tab_label} BOM Selection")
 
@@ -94,3 +96,43 @@ for i, tab_label in enumerate(tab_names):
 
         except FileNotFoundError:
             st.error(f"❌ '{excel_file}' file not found. Please ensure it exists in the app directory.")
+
+# Panel Drawing Tab
+with selected_tab[-1]:
+    st.subheader("📂 Panel Drawings Viewer")
+
+    PANEL_ROOT = "panel drwg"
+    SUBFOLDERS = ["DB panel", "POD"]
+
+    if os.path.exists(PANEL_ROOT):
+        selected_folder = st.selectbox("📁 Select Drawing Folder:", SUBFOLDERS)
+        folder_path = os.path.join(PANEL_ROOT, selected_folder)
+
+        if os.path.isdir(folder_path):
+            pdf_files = [f for f in os.listdir(folder_path) if f.lower().endswith(".pdf")]
+
+            if pdf_files:
+                selected_pdf = st.selectbox("📝 Select a PDF to view/download:", pdf_files)
+                pdf_path = os.path.join(folder_path, selected_pdf)
+
+                with open(pdf_path, "rb") as f:
+                    pdf_data = f.read()
+
+                st.download_button(
+                    label="📥 Download PDF",
+                    data=pdf_data,
+                    file_name=selected_pdf,
+                    mime="application/pdf"
+                )
+
+                try:
+                    st.markdown("### 📄 PDF Preview")
+                    st.pdf(pdf_data)  # Requires Streamlit >= 1.33.0
+                except Exception:
+                    st.info("🛈 Upgrade Streamlit to 1.33+ to enable PDF preview.")
+            else:
+                st.warning("⚠️ No PDF files found in the selected folder.")
+        else:
+            st.error("❌ Selected folder does not exist.")
+    else:
+        st.error("❌ 'panel drwg' directory not found. Please make sure it's placed in the app folder.")
