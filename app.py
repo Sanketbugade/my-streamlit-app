@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from io import BytesIO
 import os
+import base64
 
 st.set_page_config(page_title="BOM Selector", layout="wide")
 st.title("📦 Project BOM Builder")
@@ -126,12 +127,12 @@ with selected_tab[-1]:
                     mime="application/pdf"
                 )
 
-                # PDF Preview
-                try:
-                    st.markdown("### 📄 PDF Preview")
-                    st.pdf(BytesIO(pdf_data))  # ✅ Wrap with BytesIO
-                except Exception as e:
-                    st.info(f"🛈 PDF preview failed: {e}")
+                # PDF Preview using iframe + base64 embed
+                base64_pdf = base64.b64encode(pdf_data).decode('utf-8')
+                pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="800px"></iframe>'
+                st.markdown("### 📄 PDF Preview", unsafe_allow_html=True)
+                st.markdown(pdf_display, unsafe_allow_html=True)
+
             else:
                 st.warning("⚠️ No PDF files found in the selected folder.")
         else:
