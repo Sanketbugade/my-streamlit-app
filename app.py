@@ -5,7 +5,7 @@ import os
 import base64
 
 st.set_page_config(page_title="BOM Selector", layout="wide")
-st.title("📦 Project BOM Builder")
+st.title("📦 Vertiv™ SmartSolutions™(IT Solutions)- Project BOM Builder, Drawings")
 
 # Tab setup
 tabs = {
