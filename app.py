@@ -15,7 +15,7 @@ tabs = {
 }
 
 # Add extra tab for drawings
-tab_names = list(tabs.keys()) + ["Panel Drwg"]
+tab_names = list(tabs.keys()) + ["Panel Drawings"]
 selected_tab = st.tabs(tab_names)
 
 # BOM Tabs
@@ -102,7 +102,7 @@ for i, tab_label in enumerate(list(tabs.keys())):
 with selected_tab[-1]:
     st.subheader("📂 Panel Drawings Viewer")
 
-    PANEL_ROOT = "panel drwg"
+    PANEL_ROOT = "Panel Drawings"
     SUBFOLDERS = ["DB panel", "POD"]
 
     if os.path.exists(PANEL_ROOT):
@@ -130,4 +130,4 @@ with selected_tab[-1]:
         else:
             st.error("❌ Selected folder does not exist.")
     else:
-        st.error("❌ 'panel drwg' directory not found. Please make sure it's placed in the app folder.")
+        st.error("❌ 'Panel Drawings' directory not found. Please make sure it's placed in the app folder.")
