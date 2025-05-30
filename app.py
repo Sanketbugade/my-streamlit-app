@@ -118,6 +118,7 @@ with selected_tab[-1]:
                 with open(pdf_path, "rb") as f:
                     pdf_data = f.read()
 
+                # Download button
                 st.download_button(
                     label="📥 Download PDF",
                     data=pdf_data,
@@ -125,11 +126,12 @@ with selected_tab[-1]:
                     mime="application/pdf"
                 )
 
+                # PDF Preview
                 try:
                     st.markdown("### 📄 PDF Preview")
-                    st.pdf(pdf_data)  # Requires Streamlit >= 1.33.0
-                except Exception:
-                    st.info("🛈 Upgrade Streamlit to 1.33+ to enable PDF preview.")
+                    st.pdf(BytesIO(pdf_data))  # ✅ Wrap with BytesIO
+                except Exception as e:
+                    st.info(f"🛈 PDF preview failed: {e}")
             else:
                 st.warning("⚠️ No PDF files found in the selected folder.")
         else:
